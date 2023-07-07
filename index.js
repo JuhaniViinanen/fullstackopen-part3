@@ -1,5 +1,8 @@
 const express = require("express")
 const app = express()
+
+app.use(express.json())
+
 const PORT = 3001
 
 let data = [
@@ -25,14 +28,25 @@ let data = [
     }
 ]
 
+function getRandomInt(max) {
+    return Math.floor(Math.random() * max)
+}
+
 app.get("/info", (request, response) => {
     const timestamp = new Date(Date.now()).toString()
     response.send(
-        `Phonebook has info for ${data.length}people<br/>${timestamp}`)
+        `Phonebook has info for ${data.length} people<br/>${timestamp}`)
 })
 
 app.get("/api/persons", (request, response) => {
     response.json(data)
+})
+
+app.post("/api/persons", (request, response) => {
+    const newPerson = request.body
+    newPerson.id = getRandomInt(100000)
+    data = data.concat(newPerson)
+    response.status(201).json(newPerson)
 })
 
 app.get("/api/persons/:id", (request, response) => {
