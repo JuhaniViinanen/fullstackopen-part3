@@ -1,27 +1,7 @@
 require("dotenv").config()
 const express = require("express")
 const morgan = require("morgan")
-
-const mongoose = require("mongoose")
-const dbURL = process.env.MONGODB_URI
-mongoose.connect(dbURL)
-const personSchema = new mongoose.Schema(
-    {
-        name: String,
-        number: String
-    },
-    {
-        toJSON: {
-            transform: (document, returnedObject) => {
-                returnedObject.id = returnedObject._id.toString()
-                delete returnedObject._id
-                delete returnedObject.__v
-            }
-        }
-    }
-)
-
-const Person = mongoose.model("Person", personSchema)
+const Person = require("./models/person")
 
 const app = express()
 app.use(express.static("build"))
@@ -57,14 +37,22 @@ app.post("/api/persons", (request, response) => {
         response.status(400).json({error: "name missing"})
     } else if (!newPerson.number) {
         response.status(400).json({error: "number missing"})
-    } else if (data.find(person => person.name === newPerson.name)) {
-        response.status(400).json({error: "name is already taken"})
-    } else {
-        newPerson.id = getRandomInt(100000)
-        data = data.concat(newPerson)
-        response.status(201).json(newPerson)
+    }  else {
+        const person = new Person({
+            name: newPerson.name,
+            number: newPerson.number
+        })
+        person.save().then(savedPerson => {
+            response.status(201).json(savedPerson)
+        })
     }
 })
+
+/*
+else if (data.find(person => person.name === newPerson.name)) {
+        response.status(400).json({error: "name is already taken"})
+    }
+*/
 
 app.get("/api/persons/:id", (request, response) => {
     const id = Number(request.params.id)
