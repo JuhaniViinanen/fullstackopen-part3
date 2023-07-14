@@ -13,6 +13,25 @@ Content-Type: application/json
 }
 
 ###
+POST http://localhost:3001/api/persons HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "so",
+    "number": "040-5562304"
+}
+
+###
+PUT http://localhost:3001/api/persons/64b17a897da87dd3ea907ed5 HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "Spongebob",
+    "number": "040-5562304"
+}
+
+
+###
 GET http://localhost:3001/api/persons/1 HTTP/1.1
 
 ###
