@@ -44,12 +44,6 @@ app.post("/api/persons", (request, response) => {
     }
 })
 
-/*
-else if (data.find(person => person.name === newPerson.name)) {
-        response.status(400).json({error: "name is already taken"})
-    }
-*/
-
 app.get("/api/persons/:id", (request, response) => {
     const id = Number(request.params.id)
     const person = data.find(person => person.id === id)
@@ -60,12 +54,31 @@ app.get("/api/persons/:id", (request, response) => {
     }
 })
 
-app.delete("/api/persons/:id", (request, response) => {
+app.delete("/api/persons/:id", (request, response, next) => {
     Person.findByIdAndDelete(request.params.id)
       .then(result => {
         response.status(204).end()
       })
+      .catch(error => next(error))
 })
+
+const notFound = (request, response) => {
+    response.status(404).end()
+}
+
+app.use(notFound)
+
+const errorHandler = (error, request, response, next) => {
+    console.log(error.name)
+
+    if (error.name === "CastError") {
+        response.status(400).json({error: "malformed id"})
+    }
+
+    next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
