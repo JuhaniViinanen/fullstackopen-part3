@@ -14,15 +14,17 @@ morgan.token("data", (req, res) => {
 })
 app.use(morgan(":method :url :status :res[content-length] - :response-time ms :data"))
 
-app.get("/info", (request, response) => {
+app.get("/info", (request, response, next) => {
     const timestamp = new Date(Date.now()).toString()
-    response.send(
-        `Phonebook has info for ${data.length} people<br/>${timestamp}`)
+    Person.countDocuments({})
+      .then(count => {
+        response.send(`Phonebook has info for ${count} people<br/>${timestamp}`)
+      })
+      .catch(error => next(error))
 })
 
 app.get("/api/persons", (request, response) => {
-    Person
-      .find({})
+    Person.find({})
       .then(people => response.json(people))
 })
 
@@ -44,14 +46,16 @@ app.post("/api/persons", (request, response) => {
     }
 })
 
-app.get("/api/persons/:id", (request, response) => {
-    const id = Number(request.params.id)
-    const person = data.find(person => person.id === id)
-    if (person) {
-        response.json(person)
-    } else {
-        response.status(404).end()
-    }
+app.get("/api/persons/:id", (request, response, next) => {
+    Person.findById(request.params.id)
+      .then(person => {
+        if (person) {
+            response.json(person)
+        } else {
+            response.status(404).end()
+        }
+      })
+      .catch(error => next(error))
 })
 
 app.put("/api/persons/:id", (request, response, next) => {
@@ -81,7 +85,7 @@ const notFound = (request, response) => {
 app.use(notFound)
 
 const errorHandler = (error, request, response, next) => {
-    console.log(error.name)
+    console.log(error.message)
 
     if (error.name === "CastError") {
         response.status(400).json({error: "malformed id"})
