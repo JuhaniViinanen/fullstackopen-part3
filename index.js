@@ -14,10 +14,6 @@ morgan.token("data", (req, res) => {
 })
 app.use(morgan(":method :url :status :res[content-length] - :response-time ms :data"))
 
-function getRandomInt(max) {
-    return Math.floor(Math.random() * max)
-}
-
 app.get("/info", (request, response) => {
     const timestamp = new Date(Date.now()).toString()
     response.send(
@@ -65,14 +61,10 @@ app.get("/api/persons/:id", (request, response) => {
 })
 
 app.delete("/api/persons/:id", (request, response) => {
-    const id = Number(request.params.id)
-    const person = data.find(person => person.id === id)
-    if (!person) {
-        response.status(404).end()
-    } else {
-        data = data.filter(person => person.id !== id)
+    Person.findByIdAndDelete(request.params.id)
+      .then(result => {
         response.status(204).end()
-    }
+      })
 })
 
 const PORT = process.env.PORT
